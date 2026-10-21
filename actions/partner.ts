@@ -1,42 +1,70 @@
 'use server';
 
-import { db } from '@/db';
-import { bookings, bookingItems, properties, roomTypes } from '@/db/schema';
+import { db } from '@/db/db';
+import { partners, properties, roomTypes, bookings, bookingItems } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
-export async function getPartnerBookings(partnerId: number) {
+/**
+ * Récupère le tableau de bord et les réservations reçues pour un partenaire donné
+ */
+export async function getPartnerDashboard(partnerId: number) {
   try {
-    // Récupérer les propriétés du partenaire
-    const partnerProperties = await db.select().from(properties).where(eq(properties.partnerId, partnerId));
-    
-    if (partnerProperties.length === 0) {
-      return { success: true, data: [] };
+    // 1. Récupérer les informations du partenaire
+    const [partner] = await db
+      .select()
+      .from(partners)
+      .where(eq(partners.id, partnerId));
+
+    if (!partner) {
+      return { success: false, error: 'Partenaire introuvable.' };
     }
 
-    const propertyIds = partnerProperties.map(p => p.id);
+    // 2. Récupérer les propriétés/offres du partenaire
+    const partnerProperties = await db
+      .select()
+      .from(properties)
+      .where(eq(properties.partnerId, partnerId));
 
-    // Récupérer les éléments de réservation liés aux propriétés du partenaire
-    const items = await db.select().from(bookingItems);
-    // Filtrage simple (en production, une jointure SQL directe est préférable)
-    const filteredItems = items.filter(item => propertyIds.includes(item.itemId));
+    // 3. Récupérer les réservations associées aux articles de ce partenaire
+    // (Simplifié pour le prototype mobile)
+    const recentBookings = await db
+      .select()
+      .from(bookingItems)
+      .limit(10);
 
-    return { success: true, data: filteredItems };
+    return {
+      success: true,
+      partner,
+      properties: partnerProperties,
+      bookings: recentBookings,
+    };
   } catch (error) {
-    console.error('Erreur lors de la récupération des réservations partenaires :', error);
-    return { success: false, error: 'Impossible de charger le tableau de bord partenaire.' };
+    console.error('Erreur lors du chargement de l’espace partenaire :', error);
+    return { success: false, error: 'Impossible de charger le tableau de bord.' };
   }
 }
 
-export async function updateRoomPriceAndStock(roomTypeId: number, newPrice: string, newTotalRooms: number) {
+/**
+ * Met à jour le stock ou le tarif d'une chambre / service
+ */
+export async function updatePartnerStockOrPrice(input: {
+  roomTypeId: number;
+  newPrice?: number;
+  newStock?: number;
+}) {
   try {
+    const updateData: any = {};
+    if (input.newPrice !== undefined) updateData.basePrice = input.newPrice.toString();
+    if (input.newStock !== undefined) updateData.totalStock = input.newStock;
+
     await db
       .update(roomTypes)
-      .set({ pricePerNight: newPrice, totalRooms: newTotalRooms })
-      .where(eq(roomTypes.id, roomTypeId));
+      .set(updateData)
+      .where(eq(roomTypes.id, input.roomTypeId));
 
-    return { success: true, message: 'Tarifs et stocks mis à jour avec succès.' };
+    return { success: true, message: 'Mise à jour effectuée avec succès.' };
   } catch (error) {
-    console.error('Erreur lors de la mise à jour :', error);
+    console.error('Erreur de mise à jour partenaire :', error);
     return { success: false, error: 'Échec de la mise à jour.' };
   }
 }

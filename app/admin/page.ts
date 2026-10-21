@@ -1,125 +1,112 @@
-'use client';
+import { getAdminDashboardData } from '@/actions/admin';
+import Link from 'next/link';
 
-import { useState, useEffect } from 'react';
-import { ShieldAlert, CheckCircle2, XCircle, Users, FileText, DollarSign } from 'lucide-react';
-import { getPendingPartners, updatePartnerKycStatus } from '@/actions/admin';
-
-export default function AdminDashboardPage() {
-  const [partners, setPartners] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => {
-    async function loadAdminData() {
-      const res = await getPendingPartners();
-      if (res.success && res.data) {
-        setPartners(res.data);
-      }
-      setLoading(false);
-    }
-    loadAdminData();
-  }, []);
-
-  const handleKycAction = async (partnerId: number, status: 'verified' | 'rejected') => {
-    // ID admin fictif 1 pour la démonstration
-    const res = await updatePartnerKycStatus(partnerId, status, 1);
-    if (res.success) {
-      setMessage(res.message);
-      setPartners(partners.filter(p => p.id !== partnerId));
-    } else {
-      setMessage(res.error || "Une erreur est survenue.");
-    }
-  };
+export default async function AdminDashboardPage() {
+  const res = await getAdminDashboardData();
+  const stats = res.stats || { totalPartners: 0, pendingPartners: 0, totalBookings: 0 };
+  const partnersList = res.partners || [];
+  const logsList = res.auditLogs || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
-        
-        {/* En-tête Admin */}
-        <div className="bg-blue-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+    <div className="min-h-screen bg-slate-100 pb-20">
+      {/* En-tête Admin */}
+      <div className="bg-slate-900 text-white py-6 px-6 shadow-md">
+        <div className="max-w-6xl mx-auto flex justify-between items-center">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider bg-blue-800 px-3 py-1 rounded-full">
-              Administration Centrale LHODAC
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold mt-3">Supervision & Validation KYC</h1>
-            <p className="text-xs text-blue-200 mt-1">Validation des partenaires, modération et suivi des transactions au Congo.</p>
+            <span className="text-xs uppercase tracking-wider text-amber-400 font-semibold">Administration Centrale</span>
+            <h1 className="text-2xl font-bold mt-0.5">LHODAC Back-Office</h1>
           </div>
-          <ShieldAlert className="w-12 h-12 text-blue-300 opacity-80 mt-4 sm:mt-0" />
+          <Link href="/" className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-xs font-semibold transition">
+            Retour au site public
+          </Link>
         </div>
+      </div>
 
-        {message && (
-          <div className="mb-6 bg-blue-50 border-l-4 border-blue-900 p-4 rounded-md text-sm text-blue-900 flex items-center space-x-2">
-            <CheckCircle2 className="w-5 h-5 text-blue-900" />
-            <span>{message}</span>
+      <div className="max-w-6xl mx-auto px-6 mt-8 space-y-8">
+        {/* Cartes de Statistiques */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Partenaires inscrits</span>
+            <span className="text-3xl font-bold text-slate-900 mt-2 block">{stats.totalPartners}</span>
+            <span className="text-xs text-amber-600 mt-1 block">⚠️ {stats.pendingPartners} en attente de validation KYC</span>
           </div>
-        )}
-
-        {/* Statistiques rapides */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-            <div className="p-3 bg-blue-50 rounded-xl text-blue-900"><Users className="w-6 h-6" /></div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">Partenaires en attente</p>
-              <p className="text-xl font-extrabold text-blue-900">{partners.length}</p>
-            </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Réservations globales</span>
+            <span className="text-3xl font-bold text-slate-900 mt-2 block">{stats.totalBookings}</span>
+            <span className="text-xs text-emerald-600 mt-1 block">✔ Transit et hôtels actifs</span>
           </div>
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-            <div className="p-3 bg-green-50 rounded-xl text-green-700"><FileText className="w-6 h-6" /></div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">Transactions sécurisées</p>
-              <p className="text-xl font-extrabold text-gray-900">Actif</p>
-            </div>
-          </div>
-          <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center space-x-4">
-            <div className="p-3 bg-amber-50 rounded-xl text-amber-700"><DollarSign className="w-6 h-6" /></div>
-            <div>
-              <p className="text-xs text-gray-500 uppercase font-semibold">Commission plateforme</p>
-              <p className="text-xl font-extrabold text-gray-900">10%</p>
-            </div>
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+            <span className="text-xs font-semibold text-slate-500 uppercase">Commission standard</span>
+            <span className="text-3xl font-bold text-slate-900 mt-2 block">10.00%</span>
+            <span className="text-xs text-slate-500 mt-1 block">Paramétrable par partenaire</span>
           </div>
         </div>
 
-        {/* Liste des partenaires à valider (KYC) */}
-        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-blue-900 mb-6">Validation des dossiers partenaires (RCCM / NIU)</h2>
+        {/* Validation des Partenaires & KYC */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">Validation KYC & Partenaires (RCCM / NIU)</h2>
 
-          {loading ? (
-            <p className="text-sm text-gray-500">Chargement des dossiers...</p>
-          ) : partners.length > 0 ? (
-            <div className="space-y-4">
-              {partners.map((partner) => (
-                <div key={partner.id} className="p-4 bg-gray-50 rounded-2xl border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                  <div>
-                    <h3 className="font-bold text-blue-900 text-base">{partner.companyName}</h3>
-                    <p className="text-xs text-gray-600 mt-1">Numéro RCCM / NIU : <span className="font-mono font-semibold">{partner.rccmNiu}</span></p>
-                    <p className="text-[11px] text-gray-400 mt-0.5">Soumis le : {new Date(partner.createdAt).toLocaleDateString('fr-FR')}</p>
-                  </div>
-                  <div className="flex items-center space-x-2 w-full sm:w-auto">
-                    <button
-                      onClick={() => handleKycAction(partner.id, 'verified')}
-                      className="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1 shadow"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      <span>Valider</span>
-                    </button>
-                    <button
-                      onClick={() => handleKycAction(partner.id, 'rejected')}
-                      className="flex-1 sm:flex-none bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1 shadow"
-                    >
-                      <XCircle className="w-4 h-4" />
-                      <span>Rejeter</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
+          {partnersList.length === 0 ? (
+            <p className="text-sm text-slate-500">Aucun partenaire enregistré pour l'instant.</p>
           ) : (
-            <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed">
-              <p className="text-sm text-gray-500">Aucun dossier partenaire en attente de validation.</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-600">
+                <thead className="bg-slate-50 text-slate-700 uppercase text-xs border-b border-slate-200">
+                  <tr>
+                    <th className="p-3">Entreprise</th>
+                    <th className="p-3">Catégorie</th>
+                    <th className="p-3">RCCM / NIU</th>
+                    <th className="p-3">Statut</th>
+                    <th className="p-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {partnersList.map((partner: any) => (
+                    <tr key={partner.id} className="hover:bg-slate-50">
+                      <td className="p-3 font-semibold text-slate-900">{partner.companyName}</td>
+                      <td className="p-3 uppercase text-xs">{partner.category}</td>
+                      <td className="p-3 text-xs font-mono">
+                        RCCM: {partner.rccm} <br /> NIU: {partner.niu}
+                      </td>
+                      <td className="p-3">
+                        <span className={`px-2 py-1 rounded text-xs font-semibold uppercase ${
+                          partner.status === 'verified' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {partner.status}
+                        </span>
+                      </td>
+                      <td className="p-3 text-right space-x-2">
+                        <button className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                          Valider
+                        </button>
+                        <button className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 rounded text-xs font-medium">
+                          Suspendre
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
+        {/* Journaux d'audit immuables */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+          <h2 className="text-lg font-bold text-slate-900 mb-4">Journaux d'Audit & Sécurité (Audit Logs)</h2>
+          {logsList.length === 0 ? (
+            <p className="text-sm text-slate-500">Aucun journal d'audit enregistré.</p>
+          ) : (
+            <div className="space-y-2 font-mono text-xs">
+              {logsList.map((log: any) => (
+                <div key={log.id} className="bg-slate-50 p-3 rounded border border-slate-200 flex justify-between items-center">
+                  <span className="font-semibold text-slate-800">{log.action}</span>
+                  <span className="text-slate-400">{new Date(log.createdAt).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

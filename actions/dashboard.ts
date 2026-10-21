@@ -1,37 +1,43 @@
 'use server';
 
-import { db } from '@/db';
-import { bookings, bookingItems } from '@/db/schema';
+import { db } from '@/db/db';
+import { bookings, bookingItems, payments } from '@/db/schema';
 import { eq, desc } from 'drizzle-orm';
 
 export async function getUserBookings(userId: number) {
   try {
+    // Récupération des réservations de l'utilisateur triées par date décroissante
     const userBookings = await db
-      .select({
-        id: bookings.id,
-        status: bookings.status,
-        totalAmount: bookings.totalAmount,
-        createdAt: bookings.createdAt,
-        expiresAt: bookings.expiresAt,
-      })
+      .select()
       .from(bookings)
       .where(eq(bookings.userId, userId))
       .orderBy(desc(bookings.createdAt));
 
-    // Pour chaque réservation, récupérer les items associés
-    const detailedBookings = await Promise.all(
-      userBookings.map(async (booking) => {
-        const items = await db
-          .select()
-          .from(bookingItems)
-          .where(eq(bookingItems.bookingId, booking.id));
-        return { ...booking, items };
-      })
-    );
+    const enrichedBookings = [];
 
-    return { success: true, data: detailedBookings };
+    for (const booking of userBookings) {
+      // Récupération des éléments liés (hôtels, circuits, transport)
+      const items = await db
+        .select()
+        .from(bookingItems)
+        .where(eq(bookingItems.bookingId, booking.id));
+
+      // Récupération des informations de paiement
+      const [payment] = await db
+        .select()
+        .from(payments)
+        .where(eq(payments.bookingId, booking.id));
+
+      enrichedBookings.push({
+        ...booking,
+        items,
+        payment: payment || null,
+      });
+    }
+
+    return { success: true, data: enrichedBookings };
   } catch (error) {
-    console.error('Erreur lors de la récupération des réservations:', error);
-    return { success: false, error: 'Impossible de charger vos réservations.' };
+    console.error('Erreur lors de la récupération des réservations client :', error);
+    return { success: false, error: 'Impossible de charger vos réservations.', data: [] };
   }
 }

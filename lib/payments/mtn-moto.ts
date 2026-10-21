@@ -1,27 +1,65 @@
-import { PaymentProvider, PaymentDetails, PaymentResponse } from './provider';
+import { randomUUID } from 'crypto';
 
-export class MtnMomoProvider implements PaymentProvider {
-  async initiatePayment(details: PaymentDetails): Promise<PaymentResponse> {
+type MomoPaymentRequest = {
+  amount: number;
+  currency: string;
+  externalId: string;
+  payerPhone: string;
+  payerMessage?: string;
+  payeeNote?: string;
+};
+
+export class MtnMomoProvider {
+  private baseUrl: string;
+  private subscriptionKey: string;
+  private environment: string;
+
+  constructor() {
+    this.baseUrl = process.env.MTN_MOMO_BASE_URL || 'https://sandbox.momodeveloper.mtn.com';
+    this.subscriptionKey = process.env.MTN_MOMO_SUBSCRIPTION_KEY || '';
+    this.environment = process.env.MTN_MOMO_ENVIRONMENT || 'sandbox';
+  }
+
+  /**
+   * Initialise une demande de paiement Mobile Money (Push USSD sur le téléphone du client)
+   */
+  async requestToPay(input: MomoPaymentRequest) {
+    const referenceId = randomUUID(); // Idempotency key / Reference unique
+
     try {
-      // Simulation d'appel à l'API Sandbox MTN MoMo
-      // En production, intégrez ici fetch() vers l'API officielle avec la clé d'idempotence
-      console.log(`[MTN MoMo Sandbox] Initiation pour ${details.phoneNumber} - Montant: ${details.amount} XAF`);
+      // Dans un environnement de production réel, l'appel HTTP vers l'API MTN MoMo Collection s'effectue ici
+      // avec les en-têtes d'autorisation, X-Reference-Id et X-Target-Environment.
+      console.log(`[MTN MoMo Sandbox] Initiation du paiement pour ${input.payerPhone} d'un montant de ${input.amount} ${input.currency}`);
+      console.log(`[MTN MoMo Sandbox] Reference ID généré : ${referenceId}`);
 
+      // Simulation de la réponse de l'API de l'opérateur
       return {
         success: true,
-        transactionId: `MTN-${Date.now()}`,
-        status: 'pending', // En attente de la validation USSD par l'utilisateur
-        rawResponse: { message: 'USSD push sent successfully' },
+        reference: referenceId,
+        status: 'PENDING',
+        message: 'Demande de paiement envoyée. Veuillez valider sur votre téléphone (USSD).'
       };
     } catch (error) {
-      console.error('Erreur MTN MoMo:', error);
-      return { success: false, status: 'failed', error: 'Échec de l\'initialisation MTN MoMo' };
+      console.error('Erreur lors de la requête MTN MoMo :', error);
+      return { success: false, error: 'Échec de la communication avec l’opérateur de paiement.' };
     }
   }
 
-  verifyWebhook(headers: any, body: any): boolean {
-    // Vérification de la signature cryptographique du webhook opérateur
-    const signature = headers['x-momo-signature'];
-    return Boolean(signature); // Simplifié pour l'exemple sandbox
+  /**
+   * Vérifie le statut d'une transaction en cours (Polling)
+   */
+  async getTransactionStatus(referenceId: string) {
+    try {
+      // Simulation d'interrogation du statut auprès de l'API MoMo
+      return {
+        success: true,
+        status: 'SUCCESSFUL', // Peut être PENDING, SUCCESSFUL ou FAILED
+        reference: referenceId,
+      };
+    } catch (error) {
+      return { success: false, status: 'FAILED', error: 'Impossible de vérifier le statut.' };
+    }
   }
 }
+
+export const mtnMomo = new MtnMomoProvider();

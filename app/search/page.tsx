@@ -1,99 +1,73 @@
-'use client';
-
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Search, MapPin, Tag, ArrowRight } from 'lucide-react';
 import { searchUnified } from '@/actions/search';
+import { formatXAF } from '@/lib/utils';
+import Link from 'next/link';
 
-export default function SearchResultsPage() {
-  const searchParams = useSearchParams();
-  const initialType = (searchParams.get('type') as 'hotels' | 'circuits' | 'routes') || 'hotels';
-  const initialCity = searchParams.get('city') || '';
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: { type?: string; city?: string; destination?: string };
+}) {
+  const type = (searchParams.type as 'hotels' | 'tours' | 'transport' | 'vols') || 'hotels';
+  const city = searchParams.city || 'Brazzaville';
+  const destination = searchParams.destination || '';
 
-  const [activeTab, setActiveTab] = useState<'hotels' | 'circuits' | 'routes'>(initialType);
-  const [cityFilter, setCityFilter] = useState(initialCity);
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const handleSearch = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    setLoading(true);
-    const res = await searchUnified(activeTab, { city: cityFilter });
-    if (res.success) {
-      setResults(res.data || []);
-    }
-    setLoading(false);
-  };
+  const response = await searchUnified({ type, city, destination });
+  const items = response.data || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-extrabold text-blue-900 mb-6 text-center">
-          Résultats de recherche LHODAC
-        </h1>
-
-        {/* Onglets de filtrage */}
-        <div className="flex justify-center space-x-2 mb-6">
-          {(['hotels', 'circuits', 'routes'] as const).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => { setActiveTab(tab); setResults([]); }}
-              className={`px-5 py-2.5 rounded-xl font-medium text-sm transition ${
-                activeTab === tab ? 'bg-blue-900 text-white shadow' : 'bg-white text-gray-700 border hover:bg-gray-100'
-              }`}
-            >
-              {tab === 'hotels' ? 'Hôtels' : tab === 'circuits' ? 'Circuits' : 'Transport Routier'}
-            </button>
-          ))}
+    <div className="min-h-screen bg-slate-50 pb-12">
+      {/* En-tête de recherche */}
+      <div className="bg-emerald-800 text-white py-8 px-4 shadow-md">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl font-bold">Résultats de recherche</h1>
+          <p className="text-emerald-100 text-sm mt-1">
+            Recherche par catégorie : <span className="uppercase font-semibold">{type}</span> | Lieu : <span className="font-semibold">{city || destination}</span>
+          </p>
         </div>
+      </div>
 
-        {/* Barre de filtre rapide */}
-        <form onSubmit={handleSearch} className="bg-white p-4 rounded-2xl shadow-md flex gap-4 items-center mb-8">
-          <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50 flex-1">
-            <MapPin className="w-5 h-5 text-blue-900" />
-            <input
-              type="text"
-              value={cityFilter}
-              onChange={(e) => setCityFilter(e.target.value)}
-              placeholder="Filtrer par ville (ex: Brazzaville, Pointe-Noire)..."
-              className="w-full bg-transparent text-sm focus:outline-none font-medium"
-            />
+      {/* Liste des résultats */}
+      <div className="max-w-6xl mx-auto px-4 mt-8">
+        {items.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-slate-100">
+            <p className="text-slate-600">Aucun résultat trouvé pour cette sélection au Congo-Brazzaville.</p>
+            <Link href="/" className="mt-4 inline-block bg-emerald-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition">
+              Modifier ma recherche
+            </Link>
           </div>
-          <button
-            type="submit"
-            className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 px-6 rounded-xl transition flex items-center space-x-2"
-          >
-            <Search className="w-4 h-4" />
-            <span>Chercher</span>
-          </button>
-        </form>
-
-        {/* Affichage des résultats */}
-        {loading ? (
-          <p className="text-center text-gray-500 py-12">Chargement des offres en cours...</p>
-        ) : results.length > 0 ? (
-          <div className="grid grid-cols-1 gap-4">
-            {results.map((item, index) => (
-              <div key={index} className="bg-white p-6 rounded-2xl shadow border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center">
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((item: any) => (
+              <div key={item.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col justify-between">
                 <div>
-                  <h3 className="text-lg font-bold text-blue-900">{item.name || item.title || `${item.origin} ➔ ${item.destination}`}</h3>
-                  <p className="text-sm text-gray-600 mt-1">{item.address || item.location || item.vehicleInfo}</p>
+                  <div className="bg-slate-200 h-44 w-full relative flex items-center justify-center text-slate-400 font-medium">
+                    {/* Placeholder image ou image réelle */}
+                    <span>{item.name || item.title || 'LHODAC Partner'}</span>
+                  </div>
+                  <div className="p-4">
+                    <span className="text-xs font-semibold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
+                      {type}
+                    </span>
+                    <h3 className="font-bold text-lg text-slate-900 mt-2">{item.name || item.title}</h3>
+                    <p className="text-slate-500 text-sm mt-1">
+                      {item.city ? `📍 ${item.city}` : ''} {item.destination ? `🎯 ${item.destination}` : ''} {item.origin ? `🚀 ${item.origin} ➔ ${item.destination}` : ''}
+                    </p>
+                  </div>
                 </div>
-                <div className="mt-4 sm:mt-0 flex items-center space-x-4">
-                  {item.price && (
-                    <span className="text-lg font-extrabold text-gray-900">{item.price} XAF</span>
-                  )}
-                  <button className="bg-blue-50 text-blue-900 hover:bg-blue-900 hover:text-white px-4 py-2 rounded-xl text-sm font-semibold transition flex items-center space-x-1">
-                    <span>Réserver</span>
-                    <ArrowRight className="w-4 h-4" />
+
+                <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50">
+                  <div>
+                    <span className="text-xs text-slate-500 block">À partir de</span>
+                    <span className="font-bold text-slate-900 text-lg">
+                      {formatXAF(item.basePrice || item.price || 15000)}
+                    </span>
+                  </div>
+                  <button className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2 rounded-lg text-sm transition">
+                    Réserver
                   </button>
                 </div>
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm">Aucun résultat trouvé pour cette recherche.</p>
           </div>
         )}
       </div>

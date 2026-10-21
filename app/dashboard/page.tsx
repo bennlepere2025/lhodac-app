@@ -1,128 +1,84 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { Calendar, ShieldCheck, QrCode, ArrowRight, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { getUserBookings } from '@/actions/dashboard';
+import { formatXAF } from '@/lib/utils';
+import Link from 'next/link';
 
-export default function ClientDashboardPage() {
-  const [bookings, setBookings] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedBooking, setSelectedBooking] = useState<any | null>(null);
-
-  useEffect(() => {
-    async function loadData() {
-      // Pour l'exemple, on utilise l'utilisateur ID 1 (à lier à la session active Better Auth / JWT)
-      const res = await getUserBookings(1);
-      if (res.success && res.data) {
-        setBookings(res.data);
-      }
-      setLoading(false);
-    }
-    loadData();
-  }, []);
+export default async function DashboardPage() {
+  // Utilisateur simulé pour la démo (ID: 1)
+  const userId = 1;
+  const response = await getUserBookings(userId);
+  const bookingsList = response.data || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-extrabold text-blue-900">Mon Espace Client</h1>
-            <p className="text-sm text-gray-600 mt-1">Consultez vos réservations et accédez à vos vouchers de voyage.</p>
-          </div>
-          <a href="/" className="text-xs text-blue-900 font-semibold underline hover:text-blue-800">
-            ← Retour à l'accueil
-          </a>
+    <div className="min-h-screen bg-slate-50 pb-16">
+      {/* En-tête du tableau de bord */}
+      <div className="bg-emerald-800 text-white py-8 px-4 shadow-md">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold">Mon Espace Voyageur</h1>
+          <p className="text-emerald-100 text-sm mt-1">Gérez vos réservations, téléchargez vos factures et accédez à vos e-billets.</p>
         </div>
+      </div>
 
-        {loading ? (
-          <p className="text-center text-gray-500 py-12">Chargement de vos réservations...</p>
-        ) : bookings.length > 0 ? (
-          <div className="space-y-4">
-            {bookings.map((booking) => (
-              <div key={booking.id} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                <div>
-                  <div className="flex items-center space-x-2 mb-2">
-                    <span className="text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-900 px-2.5 py-1 rounded-lg">
-                      Réservation #{booking.id}
-                    </span>
-                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-lg flex items-center space-x-1 ${
-                      booking.status === 'confirmed' ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'
-                    }`}>
-                      {booking.status === 'confirmed' ? <CheckCircle2 className="w-3.5 h-3.5 mr-1" /> : <Clock className="w-3.5 h-3.5 mr-1" />}
-                      {booking.status === 'confirmed' ? 'Confirmé' : 'En attente de paiement'}
-                    </span>
-                  </div>
-                  <p className="text-sm font-semibold text-gray-800">
-                    Montant total : <span className="text-blue-900 font-extrabold">{booking.totalAmount} XAF</span>
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Créé le : {new Date(booking.createdAt).toLocaleDateString('fr-FR')}
-                  </p>
+      <div className="max-w-4xl mx-auto px-4 mt-8">
+        <h2 className="text-lg font-bold text-slate-900 mb-4">Mes Réservations & Vouchers</h2>
+
+        {bookingsList.length === 0 ? (
+          <div className="bg-white rounded-xl p-8 text-center shadow-sm border border-slate-200">
+            <p className="text-slate-600 text-sm">Vous n'avez pas encore de réservation active.</p>
+            <Link href="/" className="mt-4 inline-block bg-amber-500 hover:bg-amber-600 text-slate-950 px-6 py-2.5 rounded-lg text-sm font-semibold transition">
+              Explorer les offres au Congo
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {bookingsList.map((booking: any) => (
+              <div key={booking.id} className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div className="bg-slate-100 px-6 py-3 border-b border-slate-200 flex justify-between items-center text-xs">
+                  <span className="font-semibold text-slate-700">RÉSERVATION #{booking.id}</span>
+                  <span className={`px-2.5 py-1 rounded-full font-medium uppercase tracking-wider ${
+                    booking.status === 'confirmed' ? 'bg-emerald-100 text-emerald-800' :
+                    booking.status === 'pending' ? 'bg-amber-100 text-amber-800' : 'bg-slate-200 text-slate-700'
+                  }`}>
+                    {booking.status === 'confirmed' ? 'Confirmé / Payé' : booking.status}
+                  </span>
                 </div>
 
-                <div className="mt-4 sm:mt-0">
-                  <button
-                    onClick={() => setSelectedBooking(booking)}
-                    className="bg-blue-900 hover:bg-blue-800 text-white px-4 py-2.5 rounded-xl text-sm font-semibold transition flex items-center space-x-2 shadow"
-                  >
-                    <QrCode className="w-4 h-4" />
-                    <span>Voir le Voucher & QR</span>
-                  </button>
+                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                  <div className="md:col-span-2 space-y-3">
+                    {booking.items.map((item: any, idx: number) => (
+                      <div key={idx}>
+                        <h3 className="font-bold text-slate-900 text-base">
+                          {item.itemType === 'hotel' ? '🏨 Hôtel / Hébergement' : 
+                           item.itemType === 'tour' ? '🎯 Circuit Touristique' : '🚌 Transport Routier'}
+                        </h3>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Montant unitaire : <span className="font-semibold text-slate-700">{formatXAF(item.price)}</span>
+                        </p>
+                      </div>
+                    ))}
+                    <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-sm">
+                      <span className="font-semibold text-slate-600">Total payé (TTC)</span>
+                      <span className="font-bold text-slate-900 text-base">{formatXAF(booking.totalAmount)}</span>
+                    </div>
+                  </div>
+
+                  {/* Section QR Code & Actions */}
+                  <div className="flex flex-col items-center justify-center bg-slate-50 p-4 rounded-lg border border-slate-100 text-center">
+                    <div className="bg-white p-2 rounded shadow-inner border border-slate-200 mb-2">
+                      {/* Représentation visuelle du QR code du voucher */}
+                      <div className="w-20 h-20 bg-slate-900 flex items-center justify-center text-white text-[10px] font-mono tracking-tighter">
+                        QR: LHODAC-{booking.id}
+                      </div>
+                    </div>
+                    <span className="text-[11px] text-slate-500 mb-3">À présenter au partenaire</span>
+                    <button className="w-full bg-slate-900 hover:bg-slate-800 text-white py-2 rounded-lg text-xs font-medium transition">
+                      Télécharger la facture PDF
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
-        ) : (
-          <div className="text-center py-16 bg-white rounded-2xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm">Vous n'avez aucune réservation pour le moment.</p>
-          </div>
         )}
-
-        {/* Modal du Voucher QR Code */}
-        {selectedBooking && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl relative">
-              <button
-                onClick={() => setSelectedBooking(null)}
-                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 bg-gray-100 p-2 rounded-full"
-              >
-                ✕
-              </button>
-
-              <div className="text-center">
-                <h3 className="text-xl font-extrabold text-blue-900">Voucher Officiel LHODAC</h3>
-                <p className="text-xs text-gray-500 mt-1">Référence de commande #{selectedBooking.id}</p>
-
-                {/* Simulation d'un QR Code sécurisé */}
-                <div className="my-6 p-4 bg-gray-50 border-2 border-dashed border-blue-200 rounded-2xl inline-block">
-                  <div className="w-36 h-36 bg-blue-900 mx-auto rounded-xl flex items-center justify-center text-white">
-                    <QrCode className="w-24 h-24" />
-                  </div>
-                  <p className="text-[10px] text-gray-500 mt-2 font-mono">ID: LHODAC-SECURE-QRLINK-{selectedBooking.id}</p>
-                </div>
-
-                <div className="text-left bg-gray-50 p-4 rounded-xl text-xs space-y-2 mb-6">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Statut :</span>
-                    <span className="font-bold uppercase text-blue-900">{selectedBooking.status}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Montant payé :</span>
-                    <span className="font-bold text-gray-900">{selectedBooking.totalAmount} XAF</span>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => window.print()}
-                  className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 rounded-xl transition text-sm shadow"
-                >
-                  Imprimer / Télécharger le Voucher
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
       </div>
     </div>
   );

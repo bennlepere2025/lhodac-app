@@ -1,45 +1,70 @@
 'use server';
 
-import { db } from '@/db';
+import { db } from '@/db/db';
 import { bookings, bookingItems, legalDocuments } from '@/db/schema';
+import { eq } from 'drizzle-orm';
 
-export async function createBooking(userId: number, items: { itemType: string; itemId: number; details: any; price: string }[], ipAddress: string) {
+type CreateBookingInput = {
+  userId: number;
+  items: {
+    itemType: 'hotel' | 'tour' | 'transport';
+    itemId: number;
+    details: any;
+    price: number;
+  }[];
+  clientIp: string;
+  agreedToCGV: boolean;
+};
+
+export async function createTemporaryBooking(input: CreateBookingInput) {
   try {
-    // Calcul du montant total
-    const totalAmount = items.reduce((sum, item) => sum + parseFloat(item.price), 0);
+    if (!input.agreedToCGV) {
+      return { success: false, error: 'Vous devez accepter les Conditions Générales de Vente.' };
+    }
 
-    // Définition de l'expiration du stock à 15 minutes
+    // Calcul du montant total
+    const totalAmount = input.items.reduce((sum, item) => sum + item.price, 0);
+
+    // Expiration dans 15 minutes (blocage de stock)
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
-    // 1. Insertion de la réservation globale
-    const [newBooking] = await db.insert(bookings).values({
-      userId,
-      status: 'pending',
-      totalAmount: totalAmount.toString(),
-      expiresAt,
-    }).returning({ id: bookings.id });
+    // 1. Création de la réservation principale
+    const [newBooking] = await db
+      .insert(bookings)
+      .values({
+        userId: input.userId,
+        status: 'pending',
+        totalAmount: totalAmount.toString(),
+        expiresAt,
+      })
+      .returning();
 
-    // 2. Insertion des éléments associés
-    for (const item of items) {
+    // 2. Insertion des lignes d'éléments de réservation
+    for (const item of input.items) {
       await db.insert(bookingItems).values({
         bookingId: newBooking.id,
         itemType: item.itemType,
         itemId: item.itemId,
         details: item.details,
-        price: item.price,
+        price: item.price.toString(),
       });
     }
 
-    // 3. Traçabilité de l'acceptation des CGV
+    // 3. Traçabilité légale des CGV
     await db.insert(legalDocuments).values({
-      userId,
+      userId: input.userId,
       version: '1.0',
-      ipAddress,
+      ipAddress: input.clientIp,
     });
 
-    return { success: true, bookingId: newBooking.id, message: 'Réservation enregistrée. Stock bloqué pour 15 minutes.' };
+    return { 
+      success: true, 
+      bookingId: newBooking.id, 
+      expiresAt: expiresAt.toISOString(),
+      totalAmount 
+    };
   } catch (error) {
-    console.error('Erreur lors de la création de la réservation :', error);
-    return { success: false, error: 'Impossible de finaliser la réservation pour le moment.' };
+    console.error('Erreur lors de la création de la réservation temporaire :', error);
+    return { success: false, error: 'Impossible de bloquer le stock pour le moment.' };
   }
 }
