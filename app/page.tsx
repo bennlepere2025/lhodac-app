@@ -90,6 +90,51 @@ export default function HomePage() {
             </button>
           </div>
 
+          {/* Formulaire Vols */}
+{activeTab === 'vols' && (
+  <form onSubmit={(e) => {
+    e.preventDefault();
+    window.location.href = '/search?type=vols&city=Brazzaville';
+  }} className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Aéroport de départ / Arrivée</label>
+          <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-800 mt-0.5">
+            <option value="BZV">Brazzaville (BZV)</option>
+            <option value="PNR">Pointe-Noire (PNR)</option>
+            <option value="OLL">Oyo (OLL)</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Date de vol</label>
+          <input 
+            type="date" 
+            className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600 mt-0.5" 
+          />
+        </div>
+      </div>
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Passagers</label>
+          <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-800 mt-0.5">
+            <option value="1">1 Adulte</option>
+            <option value="2">2 Adultes</option>
+            <option value="3">3+ Voyageurs</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <button 
+      type="submit"
+      className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3.5 rounded-xl transition shadow-md text-sm"
+    >
+      Rechercher les vols disponibles
+    </button>
+  </form>
+)}
           {/* Formulaire Hôtels */}
           {activeTab === 'hotels' && (
             <form onSubmit={handleHotelSearch} className="space-y-4">
