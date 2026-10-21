@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Plane, Building2, Bus, Compass, Search, Calendar, Users, MapPin } from 'lucide-react';
+import { Plane, Building2, Bus, Compass, Search, Calendar, Users, MapPin, BedDouble } from 'lucide-react';
 
 export default function Home() {
   const [activeTab, setActiveTab] = useState<'vols' | 'hotels' | 'routes' | 'circuits'>('vols');
@@ -23,7 +23,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Barre de navigation des services (Onglets type Expedia) */}
+        {/* Barre de navigation des services (Onglets) */}
         <div className="max-w-4xl mx-auto bg-white rounded-t-2xl p-2 flex justify-center space-x-2 md:space-x-4 shadow-md text-gray-700">
           <button
             onClick={() => setActiveTab('vols')}
@@ -66,7 +66,7 @@ export default function Home() {
           </button>
         </div>
 
-        {/* Bloc de Recherche Dynamique (Moteur de recherche) */}
+        {/* Bloc de Recherche Dynamique */}
         <div className="max-w-4xl mx-auto bg-white rounded-b-2xl rounded-tr-2xl p-6 shadow-2xl text-gray-800">
           {activeTab === 'vols' && (
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
@@ -99,25 +99,69 @@ export default function Home() {
           )}
 
           {activeTab === 'hotels' && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50 md:col-span-2">
-                <Building2 className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Destination ou Hôtel</label>
-                  <input type="text" placeholder="Où souhaitez-vous séjourner ?" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Building2 className="w-5 h-5 text-blue-900" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Destination</label>
+                    <input type="text" placeholder="Brazzaville ou Pointe-Noire" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Calendar className="w-5 h-5 text-blue-900" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Arrivée</label>
+                    <input type="date" className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Calendar className="w-5 h-5 text-blue-900" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Départ</label>
+                    <input type="date" className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600" />
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <Users className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Voyageurs</label>
-                  <input type="text" placeholder="1 chambre, 2 adultes" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+
+              {/* Ligne détaillée : Adultes, Enfants, Chambres et Classe */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Users className="w-5 h-5 text-blue-900" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Adultes</label>
+                    <input type="number" min="1" defaultValue="1" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Users className="w-5 h-5 text-blue-900" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Enfants</label>
+                    <input type="number" min="0" defaultValue="0" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+                  </div>
+                </div>
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <BedDouble className="w-5 h-5 text-blue-900" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Chambres</label>
+                    <input type="number" min="1" defaultValue="1" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
+                  </div>
+                </div>
+                <div className="border p-3 rounded-xl bg-gray-50">
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Classe</label>
+                  <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-700">
+                    <option value="standard">Standard</option>
+                    <option value="superieure">Supérieure</option>
+                  </select>
                 </div>
               </div>
-              <Link href="/hotels" className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition flex items-center justify-center space-x-2 shadow-md">
-                <Search className="w-5 h-5" />
-                <span>Rechercher</span>
-              </Link>
+
+              <div className="flex justify-end pt-2">
+                <Link href="/hotels" className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 px-8 rounded-xl transition flex items-center justify-center space-x-2 shadow-md w-full md:w-auto">
+                  <Search className="w-5 h-5" />
+                  <span>Rechercher les hôtels</span>
+                </Link>
+              </div>
             </div>
           )}
 
