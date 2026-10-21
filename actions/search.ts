@@ -1,6 +1,6 @@
 'use server';
 
-import { db } from '@/db';
+import { db } from '@/lib/db';
 import { properties, tours, transportRoutes } from '@/db/schema';
 import { eq, ilike, and, lte } from 'drizzle-orm';
 
