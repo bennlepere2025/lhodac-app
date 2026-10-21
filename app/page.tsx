@@ -194,6 +194,88 @@ export default function HomePage() {
             </form>
           )}
 
+            {/* Formulaire Routes de transport */}
+{activeTab === 'routes' && (
+  <form onSubmit={(e) => {
+    e.preventDefault();
+    window.location.href = '/search?type=transport&city=Brazzaville&destination=Pointe-Noire';
+  }} className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Ville de départ</label>
+          <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-800 mt-0.5">
+            <option value="Brazzaville">Brazzaville</option>
+            <option value="Pointe-Noire">Pointe-Noire</option>
+            <option value="Dolisie">Dolisie</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Ville d'arrivée</label>
+          <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-800 mt-0.5">
+            <option value="Pointe-Noire">Pointe-Noire</option>
+            <option value="Brazzaville">Brazzaville</option>
+            <option value="Dolisie">Dolisie</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Date du trajet</label>
+          <input 
+            type="date" 
+            className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600 mt-0.5" 
+          />
+        </div>
+      </div>
+    </div>
+    <button 
+      type="submit"
+      className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3.5 rounded-xl transition shadow-md text-sm"
+    >
+      Rechercher les routes disponibles
+    </button>
+  </form>
+)}
+
+        {/* Formulaire Circuits touristiques */}
+{activeTab === 'circuits' && (
+  <form onSubmit={(e) => {
+    e.preventDefault();
+    window.location.href = '/search?type=tours&destination=Odzala';
+  }} className="space-y-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Destination / Parc / Région</label>
+          <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-800 mt-0.5">
+            <option value="Odzala">Parc national d'Odzala-Kokoua</option>
+            <option value="Conkouati">Conkouati-Douli</option>
+            <option value="Brazzaville">Excursion urbaine Brazzaville</option>
+          </select>
+        </div>
+      </div>
+      <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+        <div className="w-full">
+          <label className="block text-xs font-semibold text-gray-500 uppercase">Saison / Période</label>
+          <input 
+            type="date" 
+            className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600 mt-0.5" 
+          />
+        </div>
+      </div>
+    </div>
+    <button 
+      type="submit"
+      className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3.5 rounded-xl transition shadow-md text-sm"
+    >
+      Explorer les circuits touristiques
+    </button>
+  </form>
+)}
+
           {/* Formulaires alternatifs pour les autres onglets */}
           {activeTab !== 'hotels' && (
             <div className="text-center py-12">
