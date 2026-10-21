@@ -1,222 +1,169 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { Search, Building2, Calendar, MapPin, Compass } from 'lucide-react';
 import Link from 'next/link';
-import { Plane, Building2, Bus, Compass, Search, Calendar, Users, MapPin, BedDouble } from 'lucide-react';
 
-export default function Home() {
-  const [activeTab, setActiveTab] = useState<'vols' | 'hotels' | 'routes' | 'circuits'>('vols');
+export default function HomePage() {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState<'vols' | 'hotels' | 'routes' | 'circuits'>('hotels');
+  
+  // États pour les filtres de recherche d'hôtels
+  const [city, setCity] = useState('Brazzaville');
+  const [checkIn, setCheckIn] = useState('2026-10-11');
+  const [checkOut, setCheckOut] = useState('2026-10-15');
+  const [rooms, setRooms] = useState('1');
+
+  const handleHotelSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Redirection vers la page de recherche unifiée avec les paramètres
+    router.push(`/search?type=hotels&city=${encodeURIComponent(city)}`);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-between">
-      {/* En-tête / Hero Section avec style Expedia */}
-      <div className="bg-blue-900 text-white py-12 px-4 shadow-lg">
-        <div className="max-w-6xl mx-auto text-center mb-8">
-          <span className="bg-blue-800 text-blue-200 text-xs font-bold px-4 py-1.5 rounded-full uppercase tracking-wider border border-blue-700">
-            Plateforme Officielle LHODAC
-          </span>
-          <h1 className="text-4xl md:text-5xl font-extrabold mt-4 mb-4">
-            Votre voyage au Congo et au-delà
-          </h1>
-          <p className="text-blue-100 max-w-2xl mx-auto text-base">
-            Vols, hôtels, transports routiers et circuits touristiques centralisés pour simplifier vos déplacements à Brazzaville, Pointe-Noire et partout ailleurs.
-          </p>
-        </div>
-
-        {/* Barre de navigation des services (Onglets) */}
-        <div className="max-w-4xl mx-auto bg-white rounded-t-2xl p-2 flex justify-center space-x-2 md:space-x-4 shadow-md text-gray-700">
-          <button
-            onClick={() => setActiveTab('vols')}
-            className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition ${
-              activeTab === 'vols' ? 'bg-blue-900 text-white shadow' : 'hover:bg-gray-100 text-gray-700'
-            }`}
-          >
-            <Plane className="w-5 h-5" />
-            <span>Vols</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('hotels')}
-            className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition ${
-              activeTab === 'hotels' ? 'bg-blue-900 text-white shadow' : 'hover:bg-gray-100 text-gray-700'
-            }`}
-          >
-            <Building2 className="w-5 h-5" />
-            <span>Hôtels</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('routes')}
-            className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition ${
-              activeTab === 'routes' ? 'bg-blue-900 text-white shadow' : 'hover:bg-gray-100 text-gray-700'
-            }`}
-          >
-            <Bus className="w-5 h-5" />
-            <span>Routes</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('circuits')}
-            className={`flex items-center space-x-2 px-4 py-3 rounded-xl font-medium transition ${
-              activeTab === 'circuits' ? 'bg-blue-900 text-white shadow' : 'hover:bg-gray-100 text-gray-700'
-            }`}
-          >
-            <Compass className="w-5 h-5" />
-            <span>Circuits</span>
-          </button>
-        </div>
-
-        {/* Bloc de Recherche Dynamique */}
-        <div className="max-w-4xl mx-auto bg-white rounded-b-2xl rounded-tr-2xl p-6 shadow-2xl text-gray-800">
-          {activeTab === 'vols' && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <MapPin className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Origine</label>
-                  <input type="text" placeholder="Brazzaville (BZV)" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <MapPin className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Destination</label>
-                  <input type="text" placeholder="Pointe-Noire (PNR)" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <Calendar className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Dates</label>
-                  <input type="date" className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600" />
-                </div>
-              </div>
-              <Link href="/vols" className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition flex items-center justify-center space-x-2 shadow-md">
-                <Search className="w-5 h-5" />
-                <span>Rechercher</span>
-              </Link>
-            </div>
-          )}
-
-          {activeTab === 'hotels' && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                  <Building2 className="w-5 h-5 text-blue-900" />
-                  <div className="w-full">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase">Destination</label>
-                    <input type="text" placeholder="Brazzaville ou Pointe-Noire" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                  <Calendar className="w-5 h-5 text-blue-900" />
-                  <div className="w-full">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase">Arrivée</label>
-                    <input type="date" className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600" />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                  <Calendar className="w-5 h-5 text-blue-900" />
-                  <div className="w-full">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase">Départ</label>
-                    <input type="date" className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Ligne détaillée : Adultes, Enfants, Chambres et Classe */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 items-center">
-                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                  <Users className="w-5 h-5 text-blue-900" />
-                  <div className="w-full">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase">Adultes</label>
-                    <input type="number" min="1" defaultValue="1" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                  <Users className="w-5 h-5 text-blue-900" />
-                  <div className="w-full">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase">Enfants</label>
-                    <input type="number" min="0" defaultValue="0" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                  <BedDouble className="w-5 h-5 text-blue-900" />
-                  <div className="w-full">
-                    <label className="block text-xs font-semibold text-gray-500 uppercase">Chambres</label>
-                    <input type="number" min="1" defaultValue="1" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                  </div>
-                </div>
-                <div className="border p-3 rounded-xl bg-gray-50">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Classe</label>
-                  <select className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-700">
-                    <option value="standard">Standard</option>
-                    <option value="superieure">Supérieure</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex justify-end pt-2">
-                <Link href="/hotels" className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-3 px-8 rounded-xl transition flex items-center justify-center space-x-2 shadow-md w-full md:w-auto">
-                  <Search className="w-5 h-5" />
-                  <span>Rechercher les hôtels</span>
-                </Link>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'routes' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <Bus className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Trajet routier</label>
-                  <input type="text" placeholder="Ex: Brazzaville - Dolisie" className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <Calendar className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Date de départ</label>
-                  <input type="date" className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600" />
-                </div>
-              </div>
-              <Link href="/routes" className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition flex items-center justify-center space-x-2 shadow-md">
-                <Search className="w-5 h-5" />
-                <span>Trouver un trajet</span>
-              </Link>
-            </div>
-          )}
-
-          {activeTab === 'circuits' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-              <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
-                <Compass className="w-5 h-5 text-blue-900" />
-                <div className="w-full">
-                  <label className="block text-xs font-semibold text-gray-500 uppercase">Circuit touristique</label>
-                  <input type="text" placeholder="Ex: Découverte des rapides, excursions..." className="w-full bg-transparent text-sm focus:outline-none font-medium" />
-                </div>
-              </div>
-              <Link href="/circuits" className="bg-blue-900 hover:bg-blue-800 text-white font-semibold py-4 px-6 rounded-xl transition flex items-center justify-center space-x-2 shadow-md">
-                <Search className="w-5 h-5" />
-                <span>Explorer les circuits</span>
-              </Link>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Pied de page avec lien CGV */}
-      <footer className="bg-white border-t border-gray-200 py-6 mt-12 text-center text-sm text-gray-600">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-          <p>© {new Date().getFullYear()} LHODAC. Tous droits réservés.</p>
-          <div className="space-x-6">
-            <Link href="/cgv" className="hover:text-blue-900 transition underline">
-              Conditions Générales de Vente (CGV)
-            </Link>
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Navigation supérieure */}
+      <header className="bg-white border-b border-gray-100 py-4 px-6 sm:px-12 flex justify-between items-center shadow-sm">
+        <div className="flex items-center space-x-2">
+          <div className="bg-blue-900 text-white p-2 rounded-xl font-extrabold text-lg">LH</div>
+          <div>
+            <h1 className="text-lg font-extrabold text-blue-900 leading-tight">LHODAC</h1>
+            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Voyages & Logistique</p>
           </div>
         </div>
-      </footer>
+        <div className="flex items-center space-x-6 text-sm font-semibold">
+          <Link href="/" className="text-blue-900">Accueil</Link>
+          <Link href="/dashboard" className="text-gray-600 hover:text-blue-900">Mes Réservations</Link>
+          <Link href="/auth" className="bg-blue-50 text-blue-900 px-4 py-2 rounded-xl hover:bg-blue-900 hover:text-white transition">Connexion</Link>
+        </div>
+      </header>
+
+      {/* Hero Section */}
+      <div className="bg-blue-900 text-white py-12 px-6 sm:px-12 text-center">
+        <h2 className="text-3xl sm:text-4xl font-extrabold">Plateforme Officielle LHODAC</h2>
+        <p className="text-sm text-blue-200 mt-2 max-w-xl mx-auto">
+          Vols, hôtels, transports routiers et circuits touristiques centralisés pour simplifier vos déplacements à Brazzaville, Pointe-Noire et partout ailleurs.
+        </p>
+      </div>
+
+      {/* Module de recherche central */}
+      <div className="max-w-4xl mx-auto w-full px-4 -mt-6 mb-16">
+        <div className="bg-white rounded-3xl shadow-xl p-6 border border-gray-100">
+          
+          {/* Onglets de services */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 bg-gray-50 p-1.5 rounded-2xl">
+            <button
+              onClick={() => setActiveTab('vols')}
+              className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 ${
+                activeTab === 'vols' ? 'bg-white text-blue-900 shadow' : 'text-gray-600 hover:text-blue-900'
+              }`}
+            >
+              <span>Vols</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('hotels')}
+              className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 ${
+                activeTab === 'hotels' ? 'bg-white text-blue-900 shadow' : 'text-gray-600 hover:text-blue-900'
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Hôtels</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('routes')}
+              className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 ${
+                activeTab === 'routes' ? 'bg-white text-blue-900 shadow' : 'text-gray-600 hover:text-blue-900'
+              }`}
+            >
+              <MapPin className="w-4 h-4" />
+              <span>Routes</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('circuits')}
+              className={`py-3 px-4 rounded-xl text-xs sm:text-sm font-bold transition flex items-center justify-center space-x-2 ${
+                activeTab === 'circuits' ? 'bg-white text-blue-900 shadow' : 'text-gray-600 hover:text-blue-900'
+              }`}
+            >
+              <Compass className="w-4 h-4" />
+              <span>Circuits</span>
+            </button>
+          </div>
+
+          {/* Formulaire Hôtels */}
+          {activeTab === 'hotels' && (
+            <form onSubmit={handleHotelSearch} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Building2 className="w-5 h-5 text-blue-900 shrink-0" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Ville de destination</label>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-800 mt-0.5"
+                    >
+                      <option value="Brazzaville">Brazzaville</option>
+                      <option value="Pointe-Noire">Pointe-Noire</option>
+                      <option value="Oyo">Oyo</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Calendar className="w-5 h-5 text-blue-900 shrink-0" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Date d'arrivée</label>
+                    <input
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) => setCheckIn(e.target.value)}
+                      className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600 mt-0.5"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3 border p-3 rounded-xl bg-gray-50">
+                  <Calendar className="w-5 h-5 text-blue-900 shrink-0" />
+                  <div className="w-full">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase">Date de départ</label>
+                    <input
+                      type="date"
+                      value={checkOut}
+                      onChange={(e) => setCheckOut(e.target.value)}
+                      className="w-full bg-transparent text-sm focus:outline-none font-medium text-gray-600 mt-0.5"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-4 rounded-xl transition flex items-center justify-center space-x-2 shadow-lg text-base"
+                >
+                  <Search className="w-5 h-5" />
+                  <span>Voir les hôtels disponibles</span>
+                </button>
+              </div>
+            </form>
+          )}
+
+          {/* Formulaires alternatifs pour les autres onglets */}
+          {activeTab !== 'hotels' && (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-500">Module en cours de chargement pour cet onglet...</p>
+              <button
+                onClick={() => router.push(`/search?type=${activeTab}`)}
+                className="mt-4 bg-blue-900 text-white text-xs px-6 py-2.5 rounded-xl font-semibold hover:bg-blue-800 transition"
+              >
+                Explorer la recherche {activeTab}
+              </button>
+            </div>
+          )}
+
+        </div>
+      </div>
     </div>
   );
 }
